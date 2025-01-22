@@ -1,0 +1,155 @@
+doctype html
+html(lang='kr')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title NeungPOP
+    script(src='/javascripts/main.js')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    #container
+      #title
+        | NeungPOP
+      #topBar
+        #selectUI
+          select#grade.UI.select
+            option(value='-') -
+            option(value='1') 1
+            option(value='2') 2
+            option(value='3') 3
+          span.UI &#xD559;&#xB144;
+          select#class.UI.select
+            option(value='-') -
+            option(value='1') 1
+            option(value='2') 2
+            option(value='3') 3
+            option(value='4') 4
+            option(value='5') 5
+            option(value='6') 6
+          span.UI &#xBC18;
+          button#typeSelectBTN.UI.defense(type='button', onclick='TypeSelect()') Defense
+        #skinUI
+          input#fileInput1(type='file', style='display: none;', accept='image/*', onchange='updateImage(1, event)')
+          button#skinBTN1.UI.skinbtn(type='button', onclick='triggerFileInput(1)') Skin1
+          input#fileInput2(type='file', style='display: none;', accept='image/*', onchange='updateImage(2, event)')
+          button#skinBTN2.UI.skinbtn(type='button', onclick='triggerFileInput(2)') Skin2
+      #click 0
+    #popup
+      #bar
+        h2.UI Leaderboard
+      #main
+        #col.row
+          span.UI Rank
+          span.UI Class
+          span.UI
+          span.UI Attacked
+          span.UI Score
+        #ranking
+          #row.row
+            span.UI 1
+            span.UI 1-1
+            span.UI
+            span.UI 722
+            span.UI 100000
+          .row
+            span.UI 2
+            span.UI 1-2
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 3
+            span.UI 1-3
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 4
+            span.UI 1-4
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 5
+            span.UI 1-5
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 6
+            span.UI 1-6
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 7
+            span.UI 2-1
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 8
+            span.UI 2-2
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 9
+            span.UI 2-3
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 10
+            span.UI 2-4
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 11
+            span.UI 2-5
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 12
+            span.UI 2-6
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 13
+            span.UI 3-1
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 14
+            span.UI 3-2
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 15
+            span.UI 3-3
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 16
+            span.UI 3-4
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 17
+            span.UI 3-5
+            span.UI
+            span.UI 0
+            span.UI 0
+          .row
+            span.UI 18
+            span.UI 3-6
+            span.UI
+            span.UI 0
+            span.UI 0
