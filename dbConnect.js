@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3'); // better-sqlite3 모듈 불러오기
 
 // SQLite 데이터베이스 연결
-const db = new Database('./class_score.db');
+const db = new Database('./data/db.db');
 
 // 테이블 생성
 try {
@@ -33,7 +33,6 @@ try {
   console.log('초기 데이터 삽입 완료.');
 } catch (err) {
   console.error('데이터베이스 작업 중 오류 발생:', err.message);
+} finally {
+  db.close();
 }
-
-// db 객체를 외부에서 사용할 수 있도록 내보냄
-module.exports = db;

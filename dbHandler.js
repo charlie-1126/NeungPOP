@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3'); // better-sqlite3 모듈 불러오기
 
 // SQLite 데이터베이스 연결
-const db = new Database('./class_score.db');
+const db = new Database('./data/db.db');
 
 // 데이터베이스에서 데이터를 조회하는 함수
 function fetchData() {
@@ -37,7 +37,7 @@ function isValidData(clientData) {
 }
 
 // 데이터 업데이트 함수
-function dataUpdate(clientData) {
+function updateData(clientData) {
   try {
     //유효성 검사
     if (!isValidData(clientData)) {
@@ -78,4 +78,4 @@ function dataUpdate(clientData) {
   }
 }
 
-module.exports = { fetchData, dataUpdate };
+module.exports = { fetchData, updateData };

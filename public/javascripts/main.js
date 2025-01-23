@@ -11,7 +11,7 @@ let animated_data = {}; // 애니메이션용 데이터
 let local_data_update = {};
 
 // 클라이언트에서 웹소켓 연결 시도
-const socket = new WebSocket('ws://localhost:8080');
+const socket = new WebSocket('wss://' + window.location.hostname);
 socket.binaryType = 'nodebuffer';  // 기본적으로 Buffer로 설정
 
 socket.onopen = () => {
