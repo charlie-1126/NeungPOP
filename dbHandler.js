@@ -24,9 +24,26 @@ function fetchData() {
   }
 }
 
+function isValidData(clientData) {
+    for (const className in clientData) {
+      const { attacked, defensed } = clientData[className];
+
+      if (typeof attacked !== 'number' || typeof defensed !== 'number') {
+        console.error(`잘못된 데이터 형식: ${className}의 attacked 또는 defensed 값이 숫자가 아닙니다.`);
+        return false;
+      }
+    }
+    return true;
+}
+
 // 데이터 업데이트 함수
 function dataUpdate(clientData) {
   try {
+    //유효성 검사
+    if (!isValidData(clientData)) {
+        throw new Error('잘못된 데이터 형식');
+    }
+
     const updateStmt = db.prepare('UPDATE data SET attacked = ?, score = ? WHERE class = ?');
 
     for (const className in clientData) {
