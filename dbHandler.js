@@ -25,7 +25,7 @@ function fetchData() {
 }
 
 // 데이터 업데이트 함수
-function DataUpdate(clientData) {
+function dataUpdate(clientData) {
   try {
     const updateStmt = db.prepare('UPDATE data SET attacked = ?, score = ? WHERE class = ?');
 
@@ -61,4 +61,4 @@ function DataUpdate(clientData) {
   }
 }
 
-module.exports = { fetchData, DataUpdate };
+module.exports = { fetchData, dataUpdate };

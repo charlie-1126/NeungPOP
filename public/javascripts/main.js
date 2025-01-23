@@ -19,7 +19,6 @@ socket.onopen = () => {
 
     dataSend = setInterval(() => {
         socket.send(JSON.stringify(local_data_update)); //데이터 전송
-        console.log(local_data_update);
         local_data_update = {};
     }, 1000);
 
@@ -122,7 +121,7 @@ function gradualUpdate(data) {
 }
 
 // attack - defense 변환
-function TypeSelect() {
+function typeSelect() {
     let btn = document.getElementById("typeSelectBTN");
 
     if (type == "defense") { // defense에서 attack으로 변경

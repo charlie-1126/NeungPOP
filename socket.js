@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-const { fetchData, DataUpdate } = require('./dbHandler');
+const { fetchData, dataUpdate } = require('./dbHandler');
 
 module.exports = function (server) {
     const wss = new WebSocket.Server({ server }); // Express 서버와 웹소켓 서버 연결
@@ -21,7 +21,7 @@ module.exports = function (server) {
 
             try {
                 const clientData = JSON.parse(decodedMessage); // JSON 데이터 파싱
-                await DataUpdate(clientData); // 데이터 처리
+                await dataUpdate(clientData); // 데이터 처리
     
                 const dataToSend = await fetchData(); // 데이터베이스에서 데이터 가져오기
                 ws.send(JSON.stringify(dataToSend)); // 클라이언트로 데이터 전송
