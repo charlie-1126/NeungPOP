@@ -1,10 +1,9 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var http = require('http');
 
-//db
-var db = require('./dbConnect');
+//init db
+require('./dbConnect');
 
 // socket.js 파일 불러오기
 var setupWebSocket = require('./socket');
@@ -15,12 +14,19 @@ var server = http.createServer(app);
 // 웹소켓 설정
 setupWebSocket(server);
 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+app.get('/', (req, res) => {
+  res.render('index');
 });
+
+// catch 404 and forward to error handler
+// app.use(function(req, res, next) {
+//   res.redirect('/');
+// });
 
 // error handler
 app.use(function(err, req, res, next) {
