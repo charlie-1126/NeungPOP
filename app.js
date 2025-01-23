@@ -3,9 +3,6 @@ var express = require('express');
 var path = require('path');
 var http = require('http');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
 //db
 var db = require('./dbConnect');
 
@@ -19,9 +16,6 @@ var server = http.createServer(app);
 setupWebSocket(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
