@@ -237,3 +237,25 @@ select::-ms-expand {
 #ranking .row span:nth-child(4) {
     color: red;
 }
+
+/* pps */
+.pps {
+    font-size: 13px;
+    -webkit-text-stroke-width: 1px;
+    text-align: left;
+    visibility: hidden;
+}
+
+.pps_visible {
+    visibility: visible !important;
+}
+
+.plus {
+    color: rgb(0, 151, 50);
+    -webkit-text-stroke-color: rgb(0, 151, 50);
+}
+
+.minus {
+    color: rgb(255, 0, 0);
+    -webkit-text-stroke-color: rgb(255, 0, 0);
+}

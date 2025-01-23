@@ -9,9 +9,11 @@ let clickedImage = null; // 클릭 후 배경
 let local_data = {}
 let animated_data = {}; // 애니메이션용 데이터
 let local_data_update = {};
+let pps = {};
 
 // 클라이언트에서 웹소켓 연결 시도
-const socket = new WebSocket('wss://' + window.location.hostname);
+//const socket = new WebSocket('wss://' + window.location.hostname);
+const socket = new WebSocket('ws://localhost:8080');
 socket.binaryType = 'nodebuffer';  // 기본적으로 Buffer로 설정
 
 socket.onopen = () => {
@@ -67,13 +69,49 @@ function updateUI() {
     // UI 업데이트
     let board = document.getElementById("ranking").children;
     for (let rank = 0; rank < 18; rank++) {
+        //html 요소
         let class_text = board[rank].children[1];
         let attacked_text = board[rank].children[3];
         let score_text = board[rank].children[4];
+        let pps_text = board[rank].children[2];
 
-        class_text.innerText = sorted_data[rank][0];
+        //화면에 표시
+        let cl = sorted_data[rank][0]
+        let pps_value = pps[cl] ?? 0;
+        class_text.innerText = cl;
         attacked_text.innerText = sorted_data[rank][1];
         score_text.innerText = sorted_data[rank][2];
+        pps_text.innerText = pps_value + " PPS"
+
+        //pps 클래스 분?배
+        let pps_classlist = pps_text.classList;
+        if (pps_value == 0){
+            if (pps_classlist.contains("pps_visible")) {
+                pps_classlist.remove("pps_visible");
+            }
+        }
+        else if (pps_value > 0){
+            if (!pps_classlist.contains("pps_visible")){
+                pps_classlist.add("pps_visible");
+            }
+            if (!pps_classlist.contains("plus")){
+                pps_classlist.add("plus");
+            }
+            if (pps_classlist.contains("minus")){
+                pps_classlist.remove("minus");
+            }
+        }
+        else{
+            if (!pps_classlist.contains("pps_visible")){
+                pps_classlist.add("pps_visible");
+            }
+            if (pps_classlist.contains("plus")){
+                pps_classlist.remove("plus");
+            }
+            if (!pps_classlist.contains("minus")){
+                pps_classlist.add("minus");
+            }
+        }
     }
 }
 
@@ -89,12 +127,16 @@ function gradualUpdate(data) {
         if (!animated_data[key]) {
             animated_data[key] = { attacked: value.attacked, score: value.score };
         }
+        if (!local_data[key]) {
+            local_data[key] = { attacked: 0, score: 0 };
+        }
 
         // 증가값 계산
         incrementPerFrame[key] = {
             attacked: (value.attacked - animated_data[key].attacked) / totalFrames,
             score: (value.score - animated_data[key].score) / totalFrames,
         };
+        pps[key] = Math.round(value.score - animated_data[key].score);
     }
 
     let currentFrame = 0;
@@ -167,9 +209,13 @@ function pop() {
 
     if (type === "defense") {
         local_data[key].score += 1;
-        local_data_update[key].defensed += 1;
+        if (local_data_update[key].defensed < 50){ //pps 50으로 제한
+            local_data_update[key].defensed += 1;
+        }
     } else if (type === "attack") {
-        local_data_update[key].attacked += 1;
+        if (local_data_update[key].attacked < 50){ //pps 50으로 제한
+            local_data_update[key].attacked += 1;
+        }
         if (local_data[key].score >= 1) {
             local_data[key].score -= 1;
         }
