@@ -10,12 +10,7 @@
 @media (max-width: 1060px) {
     /* 제목 크기 조정 */
     #title {
-        font-size: 2.5rem !important; /* 모바일 화면에서 제목 크기 축소 */
-        padding-top: 60px; /* 여백 조정 */
-    }
-
-    #click {
-        font-size: 1.5rem !important;
+        padding-top: 3rem !important; /* 여백 조정 */
     }
 }
 
@@ -56,6 +51,7 @@ body {
     text-shadow: -2px 0px rgb(0, 0, 0), 0px 2px rgb(0, 0, 0), 2px 0px rgb(0, 0, 0), 0px -2px rgb(0, 0, 0);
     text-align: center;
     margin-bottom: 0px;
+    padding-top: 1.3rem;
 }
 
 /* topBar 스타일 */
@@ -63,12 +59,12 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 10px;
+    gap: 0.5rem;
     position: fixed;
-    top: 10px;
+    top: 0.7rem;
     left: 0;
     right: 0;
-    padding: 0 5px;
+    padding-right: 0.5rem;
     width: 100%;
     box-sizing: border-box;
 }
@@ -78,9 +74,9 @@ body {
 #selectUI {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.5rem;
     background: rgba(255, 255, 255, 0.8);
-    padding: 5px 5px;
+    padding: 0.3rem 0.3rem;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -88,15 +84,15 @@ body {
 /* skinUI 스타일 */
 #skinUI {
     background: rgba(255, 255, 255, 0.8);
-    padding: 5px 5px;
+    padding: 0.3rem 0.3rem;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
-    gap: 10px;
+    gap: 0.5rem;
 }
 
 #selectUI span {
-    font-size: 15px;
+    font-size: 1rem;
 }
 
 /* seleect 드롭다운 스타일 */
@@ -123,7 +119,7 @@ select::-ms-expand {
   border-radius: 4px;
   font-family: 'NanumSquareRound';
   font-style: normal;
-  font-size: 15px;
+  font-size: 1rem;
 }
 .select:focus {
     border: 1px solid #C4C4C4;
@@ -133,10 +129,10 @@ select::-ms-expand {
 
 /* attack - defense 버튼 스타일 */
 #typeSelectBTN {
-    font-size: 15px;
+    font-size: 1rem;
     border-radius: 6px;
     border: 0px;
-    width: 70px;
+    width: 4.5rem;
     cursor: pointer;
 }
 .defense {
@@ -149,10 +145,10 @@ select::-ms-expand {
 /* skin 버튼 스타일 */
 .skinbtn {
     background-color: #d4d4d4;
-    font-size: 15px;
+    font-size: 1rem;
     border-radius: 6px;
     border: 0px;
-    width: 50px;
+    width: 3.3rem;
     cursor: pointer;
 }
 
@@ -164,7 +160,7 @@ select::-ms-expand {
     color: rgb(255, 255, 255);
     text-shadow: -2px 0px rgb(0, 0, 0), 0px 2px rgb(0, 0, 0), 2px 0px rgb(0, 0, 0), 0px -2px rgb(0, 0, 0);
     text-align: center;
-    margin-top: 10px; /* selectUI와의 간격 */
+    margin-top: 0.5rem; /* selectUI와의 간격 */
     position: relative;
 }
 
@@ -222,7 +218,7 @@ select::-ms-expand {
 /* 행 */
 .row {
     display: grid;
-    grid-template-columns: 15% 20% 25% 20% 20%;
+    grid-template-columns: 15% 20% 20% 22.5% 22.5%;
     text-align: center;
     padding: 5px;
     border-top: 1px solid #ccc;
