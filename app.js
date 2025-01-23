@@ -3,11 +3,22 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var http = require('http');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+//db
+var db = require('./dbConnect');
+
+// socket.js 파일 불러오기
+var setupWebSocket = require('./socket');
+
 var app = express();
+var server = http.createServer(app);
+
+// 웹소켓 설정
+setupWebSocket(server);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -37,5 +48,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+server.listen(8080, () => {
+  console.log('Server is running on http://localhost:8080');
+})
 
 module.exports = app;

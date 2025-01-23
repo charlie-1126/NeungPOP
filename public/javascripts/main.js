@@ -1,21 +1,148 @@
 let isPopActive = false;
 let local_click = 0;
+let type = "defense"
+
+let dataSend //Setinterval
 
 let baseImage = null; // 기본 배경
 let clickedImage = null; // 클릭 후 배경
+let local_data = {}
+let animated_data = {}; // 애니메이션용 데이터
+let local_data_update = {};
+for (let grade = 1; grade <= 3; grade++){
+    for (let cl = 1; cl <= 6; cl++){
+        local_data_update[grade.toString() + "-" + cl.toString()] = {attacked: 0, defensed: 0}
+    }
+}
+
+// 클라이언트에서 웹소켓 연결 시도
+const socket = new WebSocket('ws://localhost:8080');
+socket.binaryType = 'nodebuffer';  // 기본적으로 Buffer로 설정
+
+socket.onopen = () => {
+    console.log('WebSocket connected');
+
+    dataSend = setInterval(() => {
+        socket.send(JSON.stringify(local_data_update)); //데이터 전송
+        for (let grade = 1; grade <= 3; grade++){
+            for (let cl = 1; cl <= 6; cl++){
+                local_data_update[grade.toString() + "-" + cl.toString()] = {attacked: 0, defensed: 0}
+            }
+        }
+    }, 1000);
+
+};
+
+//서버에서 메세지를 받았을때
+socket.onmessage = (event) => {
+    local_data = JSON.parse(event.data); // 서버로부터 받은 JSON 데이터를 파싱
+    gradualUpdate(local_data);
+};
+
+//에러 로그출력
+socket.onerror = (error) => {
+    console.error('WebSocket error:', error);
+};
+
+//웹소켓이 닫혔을때
+socket.onclose = () => {
+    console.log('WebSocket closed');
+    clearInterval(dataSend);
+};
+
+//화면 업데이트
+function updateUI() {
+    let sorted_data = Object.entries(animated_data)
+        .map(([key, value]) => {
+            return [
+                key,
+                Math.round(value.attacked),
+                Math.round(value.score)
+            ];
+        })
+        .sort((a, b) => {
+            // score 내림차순
+            if (b[2] !== a[2]) {
+                return b[2] - a[2];
+            }
+            // attacked 내림차순
+            if (b[1] !== a[1]) {
+                return b[1] - a[1];
+            }
+            // key값 오름차순
+            return a[0].localeCompare(b[0]);
+        });
+
+    // UI 업데이트
+    let board = document.getElementById("ranking").children;
+    for (let rank = 0; rank < 18; rank++) {
+        let class_text = board[rank].children[1];
+        let attacked_text = board[rank].children[3];
+        let score_text = board[rank].children[4];
+
+        class_text.innerText = sorted_data[rank][0];
+        attacked_text.innerText = sorted_data[rank][1];
+        score_text.innerText = sorted_data[rank][2];
+    }
+}
+
+
+//로컬값 서버값으로 점진적으로 조정하는 함수
+function gradualUpdate(data) {
+    const animationDuration = 1000; // 애니메이션 지속 시간 (ms)
+    const frameRate = 60; // 초당 프레임 수
+    const totalFrames = Math.round((animationDuration / 1000) * frameRate);
+    const incrementPerFrame = {};
+
+    for (const [key, value] of Object.entries(data)) {
+        if (!animated_data[key]) {
+            animated_data[key] = { attacked: value.attacked, score: value.score };
+        }
+
+        // 증가값 계산
+        incrementPerFrame[key] = {
+            attacked: (value.attacked - animated_data[key].attacked) / totalFrames,
+            score: (value.score - animated_data[key].score) / totalFrames,
+        };
+    }
+
+    let currentFrame = 0;
+
+    // 애니메이션 실행
+    const updateAnimation = () => {
+        if (currentFrame >= totalFrames) {
+            updateUI(); // UI 업데이트
+            clearInterval(interval); // interval 종료
+            return;
+        }
+
+        // 각 프레임마다 값 증가
+        for (const [key, increment] of Object.entries(incrementPerFrame)) {
+            animated_data[key].attacked += increment.attacked;
+            animated_data[key].score += increment.score;
+        }
+
+        updateUI(); // UI 업데이트
+        currentFrame++;
+    };
+
+    const interval = setInterval(updateAnimation, 1000 / frameRate); // 1초를 60등분하여 주기 설정
+}
 
 // attack - defense 변환
 function TypeSelect() {
     let btn = document.getElementById("typeSelectBTN");
 
-    if (btn.classList.contains("defense")) { // defense에서 attack으로 변경
+    if (type == "defense") { // defense에서 attack으로 변경
         btn.classList.remove("defense")
         btn.classList.add("attack");
         btn.innerText = "Attack";
+        type = "attack";
     } else { // attack에서 defense로 변경
         btn.classList.remove("attack")
         btn.classList.add("defense");
         btn.innerText = "Defense";
+        type = "defense"
     }
 }
 
@@ -32,7 +159,29 @@ function pop() {
         return;
     }
 
-    //팝 함수 실행 영역
+    // 학년-반 key 생성
+    let key = grade.toString() + "-" + Class.toString();
+
+    if (!local_data[key]) {
+        local_data[key] = { attacked: 0, score: 0 };
+    }
+
+    if (!animated_data[key]) {
+        animated_data[key] = { attacked: 0, score: 0 };
+    }
+
+    if (type === "defense") {
+        local_data[key].score += 1;
+        local_data_update[key].defensed += 1;
+    } else if (type === "attack") {
+        local_data_update[key].attacked += 1;
+        if (local_data[key].score >= 1) {
+            local_data[key].score -= 1;
+        }
+    }
+
+    updateUI();
+
     local_click++;
     localStorage.setItem("local_click", JSON.stringify(local_click));
     document.getElementById("click").innerText = local_click;
@@ -158,7 +307,6 @@ function barClick() {
         main.style.display = "flex";
         let w1 = document.getElementById("col").offsetWidth
         let w2 = document.getElementById("row").offsetWidth
-        console.log(w1 - w2)
         document.getElementById("col").style.paddingRight = (w1 - w2 + 4) + "px";
     } else {
         popup.classList.remove("visible");
