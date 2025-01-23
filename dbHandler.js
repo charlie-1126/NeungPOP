@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3'); // better-sqlite3 모듈 불러오기
 
 // SQLite 데이터베이스 연결
-const db = new Database('./class_score.db', { verbose: console.log }); // verbose는 SQL 쿼리를 로그로 출력하게 설정
+const db = new Database('./class_score.db');
 
 // 데이터베이스에서 데이터를 조회하는 함수
 function fetchData() {

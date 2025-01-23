@@ -9,11 +9,6 @@ let clickedImage = null; // 클릭 후 배경
 let local_data = {}
 let animated_data = {}; // 애니메이션용 데이터
 let local_data_update = {};
-for (let grade = 1; grade <= 3; grade++){
-    for (let cl = 1; cl <= 6; cl++){
-        local_data_update[grade.toString() + "-" + cl.toString()] = {attacked: 0, defensed: 0}
-    }
-}
 
 // 클라이언트에서 웹소켓 연결 시도
 const socket = new WebSocket('ws://localhost:8080');
@@ -24,11 +19,8 @@ socket.onopen = () => {
 
     dataSend = setInterval(() => {
         socket.send(JSON.stringify(local_data_update)); //데이터 전송
-        for (let grade = 1; grade <= 3; grade++){
-            for (let cl = 1; cl <= 6; cl++){
-                local_data_update[grade.toString() + "-" + cl.toString()] = {attacked: 0, defensed: 0}
-            }
-        }
+        console.log(local_data_update);
+        local_data_update = {};
     }, 1000);
 
 };
@@ -168,6 +160,10 @@ function pop() {
 
     if (!animated_data[key]) {
         animated_data[key] = { attacked: 0, score: 0 };
+    }
+
+    if (!local_data_update[key]){
+        local_data_update[key] = {attacked: 0, defensed: 0};
     }
 
     if (type === "defense") {
