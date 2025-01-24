@@ -22,11 +22,19 @@
     }
 }
 
+/* 선택 안되게 */
+* {
+    user-select: none; /* 기본 비활성화 */
+    -webkit-user-select: none; /* 크롬, 사파리 등 웹킷 기반 브라우저 */
+    -ms-user-select: none; /* 인터넷 익스플로러 */
+    -moz-user-select: none; /* 파이어폭스 */
+}  
+
 /* 배경이미지 */
 body {
     margin: 0;
     height: 100vh;
-    background-image: url('../images/popcat.jpg');
+    background-image: url('../images/background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -41,6 +49,20 @@ body {
 .UI {
     font-family: "NanumSquareRound";
     font-weight: bold;
+}
+
+#popcat {
+    position: absolute; /* 다른 요소에 영향을 주지 않기 위해 절대 위치 지정 */
+    left: 50%; /* 수평 가운데 정렬 */
+    transform: translateX(-50%); /* 수평 가운데 보정 */
+    bottom: 0px;
+    width: 100vw;
+    max-width: 700px;
+    aspect-ratio: 1 / 1;
+}
+
+.popcat_invisible {
+    display: none;
 }
 
 /* 제목 스타일 */
@@ -64,8 +86,8 @@ body {
     top: 0.7rem;
     left: 0;
     right: 0;
-    padding-right: 0.5rem;
-    width: 100%;
+    padding-right: 10px;
+    width: 100vw;
     box-sizing: border-box;
 }
 
@@ -132,7 +154,7 @@ select::-ms-expand {
     font-size: 1rem;
     border-radius: 6px;
     border: 0px;
-    width: 4.5rem;
+    width: 70px;
     cursor: pointer;
 }
 .defense {
@@ -148,7 +170,7 @@ select::-ms-expand {
     font-size: 1rem;
     border-radius: 6px;
     border: 0px;
-    width: 3.3rem;
+    width: 50px;
     cursor: pointer;
 }
 
@@ -172,13 +194,14 @@ select::-ms-expand {
     left: 50%; /* 화면 가로 중앙 */
     transform: translateX(-50%); /* 정확히 중앙에 배치 */
     width: 800px;
-    height: 68.81px; /* 기본 높이 */
+    height: 68.81px;
     border-radius: 20px 20px 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     transition: all 0.5s ease-in-out;
     margin: 0 auto;
+    z-index: 10;
 }
 
 /* 리더보드 펼칠때 */
@@ -199,7 +222,7 @@ select::-ms-expand {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    display: flex;
+    display: none;
     flex-direction: column;
     list-style-type: none;
 }

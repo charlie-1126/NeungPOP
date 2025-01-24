@@ -3,6 +3,11 @@ let local_click = 0;
 let type = "defense"
 
 let dataSend //Setinterval
+let animationInProgress = false; // 애니메이션 실행 상태 플래그
+
+//멑티 터치 처리
+let touchCount = 0;
+let pressedKeys = new Set();
 
 let baseImage = null; // 기본 배경
 let clickedImage = null; // 클릭 후 배경
@@ -10,6 +15,12 @@ let local_data = {}
 let animated_data = {}; // 애니메이션용 데이터
 let local_data_update = {};
 let pps = {};
+
+//이미지 프리로드
+const img1 = new Image();
+img1.src = "/images/popcat_cat1.png";
+const img2 = new Image();
+img2.src = "/images/popcat_cat2.png";
 
 // 클라이언트에서 웹소켓 연결 시도
 const socket = new WebSocket('wss://' + window.location.hostname);
@@ -117,35 +128,53 @@ function updateUI() {
 
 
 //로컬값 서버값으로 점진적으로 조정하는 함수
+let isAnimating = false;  // 애니메이션 진행 여부
+let currentInterval = null; // 애니메이션 실행을 위한 interval 저장
+
+function stopAnimation() {
+    if (currentInterval) {
+        clearInterval(currentInterval);  // 기존 애니메이션 중지
+        currentInterval = null;
+    }
+    isAnimating = false;  // 애니메이션 상태 리셋
+}
+
 function gradualUpdate(data) {
-    const animationDuration = 1000; // 애니메이션 지속 시간 (ms)
-    const frameRate = 60; // 초당 프레임 수
+    // 기존 애니메이션이 진행 중이면 중지하고 새로 시작
+    if (isAnimating) {
+        stopAnimation();  // 기존 애니메이션 중지
+    }
+
+    // 애니메이션 시작
+    isAnimating = true;
+
+    const animationDuration = 1000;  // 애니메이션 지속 시간 (ms)
+    const frameRate = 60;  // 초당 프레임 수
     const totalFrames = Math.round((animationDuration / 1000) * frameRate);
+
     const incrementPerFrame = {};
 
+    // 값 증가 비율 계산
     for (const [key, value] of Object.entries(data)) {
         if (!animated_data[key]) {
             animated_data[key] = { attacked: value.attacked, score: value.score };
         }
-        if (!local_data[key]) {
-            local_data[key] = { attacked: 0, score: 0 };
-        }
 
-        // 증가값 계산
         incrementPerFrame[key] = {
             attacked: (value.attacked - animated_data[key].attacked) / totalFrames,
             score: (value.score - animated_data[key].score) / totalFrames,
         };
+
         pps[key] = Math.round(value.score - animated_data[key].score);
     }
 
     let currentFrame = 0;
 
-    // 애니메이션 실행
+    // 애니메이션 실행 함수
     const updateAnimation = () => {
         if (currentFrame >= totalFrames) {
             updateUI(); // UI 업데이트
-            clearInterval(interval); // interval 종료
+            isAnimating = false; // 애니메이션 종료
             return;
         }
 
@@ -159,7 +188,11 @@ function gradualUpdate(data) {
         currentFrame++;
     };
 
-    const interval = setInterval(updateAnimation, 1000 / frameRate); // 1초를 60등분하여 주기 설정
+    // 새로운 애니메이션 시작
+    currentInterval = setInterval(() => {
+        updateAnimation();
+        if (!isAnimating) clearInterval(currentInterval); // 애니메이션 종료 시 interval 삭제
+    }, 1000 / frameRate);
 }
 
 // attack - defense 변환
@@ -195,13 +228,6 @@ function pop() {
     // 학년-반 key 생성
     let key = grade.toString() + "-" + Class.toString();
 
-    if (!local_data[key]) {
-        local_data[key] = { attacked: 0, score: 0 };
-    }
-
-    if (!animated_data[key]) {
-        animated_data[key] = { attacked: 0, score: 0 };
-    }
 
     if (!local_data_update[key]){
         local_data_update[key] = {attacked: 0, defensed: 0};
@@ -221,8 +247,10 @@ function pop() {
         }
     }
 
-    updateUI();
-
+    var audio = new Audio('/audios/popcat_sound.mp3');
+    audio.play();
+    audio.loop = false;
+    audio.volume = 1.0;
     local_click++;
     localStorage.setItem("local_click", JSON.stringify(local_click));
     document.getElementById("click").innerText = local_click;
@@ -254,18 +282,57 @@ function updateImage(type, event) {
 
 // 이미지 변경 함수
 function setImage(isPop) {
-    let background = baseImage || "url('../images/popcat.jpg')"; // 기본 배경 설정
+    let popcat = document.getElementById("popcat")
+    let background = baseImage || "/images/popcat_cat1.png"; // 기본 배경 설정
     if (isPop) {
-        background = clickedImage || "url('../images/popcat2.png')"; // 클릭 후 배경 설정
+        background = clickedImage || "/images/popcat_cat2.png"; // 클릭 후 배경 설정
     }
-    document.body.style.backgroundImage = background;
+    if (!isPop && baseImage){
+        document.body.style.backgroundImage = baseImage;
+        if (!popcat.classList.contains("popcat_invisible")){
+            popcat.classList.add("popcat_invisible");
+        }
+    }
+    else if (isPop && clickedImage){
+        document.body.style.backgroundImage = clickedImage;
+        if (!popcat.classList.contains("popcat_invisible")){
+            popcat.classList.add("popcat_invisible");
+        }
+    }
+    else{
+        document.getElementById("popcat").src = background;
+        document.body.style.backgroundImage = "url('../images/background.jpg')"
+        if (popcat.classList.contains("popcat_invisible")){
+            popcat.classList.remove("popcat_invisible");
+        }
+    }
 }
 
 // document가 로드 되었을 때
 document.addEventListener("DOMContentLoaded", function () {
+    //반 선택 정보 저장
+    let grade_selectBox = document.getElementById("grade");
+    let class_selectBox = document.getElementById("class");
+    grade_selectBox.addEventListener('change', function () {
+        if (grade_selectBox.value != "-"){
+            localStorage.setItem("selected_grade", grade_selectBox.value)
+        }
+    })
+    class_selectBox.addEventListener('change',function () {
+        if (class_selectBox.value != "-"){
+            localStorage.setItem("selected_class", class_selectBox.value)
+        }
+    })
+
     // local click load
     local_click = JSON.parse(localStorage.getItem("local_click")) ?? 0;
     document.getElementById("click").innerText = local_click;
+
+    // 반 선택 정보 불러오기
+    let selected_grade = localStorage.getItem('selected_grade') ?? "-";
+    let selected_class = localStorage.getItem('selected_class') ?? "-";
+    grade_selectBox.value = selected_grade;
+    class_selectBox.value = selected_class;
 
     function check(target) {
         return target.tagName === "SELECT" || target.tagName === "BUTTON" || document.getElementById("popup").contains(target);
@@ -302,29 +369,31 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         event.preventDefault();
-        if (!isPopActive) {
+
+        touchLength = event.touches.length;
+        if (touchCount < touchLength) {
             pop();
-            isPopActive = true;
         }
+        touchCount = touchLength;
         setImage(true); // 터치 시작 시
     }, { passive: false });
 
     document.body.addEventListener("touchend", function (event) {
-        isPopActive = false;
+        touchCount = 0
         setImage(false); // 터치 끝날 때
     });
 
     // 키보드 이벤트
-    document.body.addEventListener("keydown", function () {
-        if (!isPopActive) {
+    document.body.addEventListener("keydown", function (event) {
+        if (!pressedKeys.has(event.key)) {
             pop();
-            isPopActive = true;
+            pressedKeys.add(event.key);
         }
         setImage(true); // 키를 누를 때
     });
 
-    document.body.addEventListener("keyup", function () {
-        isPopActive = false;
+    document.body.addEventListener("keyup", function (event) {
+        pressedKeys.delete(event.key);
         setImage(false); // 키를 뗄 때
     });
 
