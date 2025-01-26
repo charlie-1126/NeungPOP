@@ -73,7 +73,7 @@ function updateData(clientData) {
       }
     }
   } catch (err) {
-    console.error('데이터 업데이트 오류:', err.message);
+    console.error('데이터 업데이트 오류:', err.message);  
     throw err;
   }
 }

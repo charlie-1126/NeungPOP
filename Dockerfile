@@ -1,4 +1,6 @@
-FROM node:lts-slim
+FROM node:lts-alpine
+
+RUN apk add --no-cache gcompat
 
 WORKDIR /app
 
