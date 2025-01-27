@@ -1,8 +1,6 @@
 services:
   neungpop:
     build: .
-    ports: 
-      - "8080:8080"
     restart: unless-stopped
     volumes:
       - ./data:/app/data
