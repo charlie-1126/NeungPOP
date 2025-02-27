@@ -59,6 +59,7 @@ body {
     width: 100vw;
     max-width: 700px;
     aspect-ratio: 1 / 1;
+    z-index: -1;
 }
 
 .popcat_invisible {
@@ -134,14 +135,14 @@ select::-ms-expand {
     -ms-text-align-last: center;
     -moz-text-align-last: center;
 
-  /* 디자인 */
-  width: 35px;
-  border: 1px solid #C4C4C4;
-  box-sizing: border-box;
-  border-radius: 4px;
-  font-family: 'NanumSquareRound';
-  font-style: normal;
-  font-size: 1rem;
+    /* 디자인 */
+    width: 35px;
+    border: 1px solid #C4C4C4;
+    box-sizing: border-box;
+    border-radius: 4px;
+    font-family: 'NanumSquareRound';
+    font-style: normal;
+    font-size: 1rem;
 }
 .select:focus {
     border: 1px solid #C4C4C4;
