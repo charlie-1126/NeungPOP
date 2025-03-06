@@ -31,6 +31,10 @@ function resetDB(pw, date = null){
     socket.send(JSON.stringify({type:"reset", data: {pw, date}}));
 }
 
+function getResetSchedule(){
+    socket.send(JSON.stringify({type:"getResetSchedule"}));
+}
+
 socket.onopen = () => {
     console.log('WebSocket connected');
 
@@ -48,7 +52,7 @@ socket.onmessage = (event) => {
         local_data = message.data;
         gradualUpdate(local_data);
     }
-    if (message.type == "reset"){
+    if (message.type == "message"){
         console.log(message)
     }
 };

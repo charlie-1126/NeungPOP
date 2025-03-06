@@ -62,4 +62,24 @@ function initSchedule() {
     }
 }
 
-module.exports = { setSchedule, initSchedule };
+function getSchedule(){
+    const dataFilePath = path.join(__dirname, "../data/resetTime.json");
+    let data = {};
+    try {
+        const fileContent = fs.readFileSync(dataFilePath, "utf-8");
+        if (fileContent.trim()) {
+            data = JSON.parse(fileContent);
+        }
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+
+    if (!data.time){
+        return null
+    }
+
+    return dayjs(data.time).format("YYYY/MM/DD HH:mm:ss")
+}
+
+module.exports = { setSchedule, initSchedule, getSchedule };
