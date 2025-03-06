@@ -3,7 +3,7 @@ var path = require('path');
 var http = require('http');
 
 //init db
-require('./dbConnect');
+require('./services/dbConnect');
 
 // socket.js 파일 불러오기
 var setupWebSocket = require('./socket');

@@ -78,4 +78,11 @@ function updateData(clientData) {
   }
 }
 
-module.exports = { fetchData, updateData };
+//DB초기화
+function resetDB() {
+  const stmt = db.prepare('UPDATE data SET score = 0, attacked = 0');
+  stmt.run();
+  console.log('초기화 완료');
+}
+
+module.exports = { fetchData, updateData, resetDB };

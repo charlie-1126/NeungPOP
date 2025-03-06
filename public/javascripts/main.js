@@ -27,11 +27,15 @@ const socket = new WebSocket('wss://' + window.location.hostname);
 //const socket = new WebSocket('ws://localhost:8080');
 socket.binaryType = 'nodebuffer';  // 기본적으로 Buffer로 설정
 
+function resetDB(pw, date = null){
+    socket.send(JSON.stringify({type:"reset", data: {pw, date}}));
+}
+
 socket.onopen = () => {
     console.log('WebSocket connected');
 
     dataSend = setInterval(() => {
-        socket.send(JSON.stringify(local_data_update)); //데이터 전송
+        socket.send(JSON.stringify({type:"update", data: local_data_update})); //데이터 전송
         local_data_update = {};
     }, 1000);
 
@@ -39,8 +43,14 @@ socket.onopen = () => {
 
 //서버에서 메세지를 받았을때
 socket.onmessage = (event) => {
-    local_data = JSON.parse(event.data); // 서버로부터 받은 JSON 데이터를 파싱
-    gradualUpdate(local_data);
+    const message = JSON.parse(event.data);
+    if (message.type == "update" && message.status == "success"){
+        local_data = message.data;
+        gradualUpdate(local_data);
+    }
+    if (message.type == "reset"){
+        console.log(message)
+    }
 };
 
 //에러 로그출력
