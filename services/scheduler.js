@@ -13,28 +13,65 @@ function getServerTimeCron(kst) {
     return servertime.toDate();
 }
 
-async function setSchedule(kst) {
+let currentJob = null;
+
+function getServerTimeCron(kst) {
+    const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const servertime = kst.tz(serverTimeZone);
+    return servertime.toDate();
+}
+
+function setSchedule(kst) {
     const dataFilePath = path.join(__dirname, "../data/resetTime.json");
     
-    let data = {};
-    const fileContent = fs.readFileSync(dataFilePath, "utf-8");
-    if (fileContent.trim()) {
-        data = JSON.parse(fileContent);
+    if (currentJob) {
+        currentJob.cancel();
+        currentJob = null;
     }
-
-    if (data.job) {
-        data.job.cancel();
-    }
-
-    data.job = schedule.scheduleJob(getServerTimeCron(kst), () => {
+    
+    const scheduledTime = getServerTimeCron(kst);
+    
+    // 스케줄 등록
+    currentJob = schedule.scheduleJob(scheduledTime, () => {
         resetDB();
-        delete data.job;
-        fs.writeFileSync(dataFilePath, JSON.stringify(data, null, 2));
+        fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
+        currentJob = null;
     });
-
-    const dataToSave = { ...data };
-    delete dataToSave.job;
+    
+    const dataToSave = {
+        time: scheduledTime
+    };
     fs.writeFileSync(dataFilePath, JSON.stringify(dataToSave, null, 2));
 }
 
-module.exports = { setSchedule };
+function initSchedule() {
+    const dataFilePath = path.join(__dirname, "../data/resetTime.json");
+    let data = {};
+    try {
+        const fileContent = fs.readFileSync(dataFilePath, "utf-8");
+        if (fileContent.trim()) {
+            data = JSON.parse(fileContent);
+        }
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+    
+    if (!data.time) return;
+    
+    const scheduledTime = dayjs(data.time);
+    const now = dayjs().tz();
+    
+    if (scheduledTime.isAfter(now)) {
+        currentJob = schedule.scheduleJob(getServerTimeCron(scheduledTime), () => {
+            resetDB();
+            fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
+            currentJob = null;
+        });
+    } else {
+        fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
+        console.log("만료된 스케줄 삭제");
+    }
+}
+
+module.exports = { setSchedule, initSchedule };

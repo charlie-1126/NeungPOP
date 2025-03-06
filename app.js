@@ -2,8 +2,12 @@ var express = require('express');
 var path = require('path');
 var http = require('http');
 
+const { initSchedule } = require('./services/scheduler');
+
 //init db
 require('./services/dbConnect');
+initSchedule()
+
 
 // socket.js 파일 불러오기
 var setupWebSocket = require('./socket');
