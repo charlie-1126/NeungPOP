@@ -7,19 +7,7 @@ dayjs.extend(require('dayjs/plugin/utc'));
 dayjs.extend(require('dayjs/plugin/timezone'));
 dayjs.tz.setDefault('Asia/Seoul');
 
-function getServerTimeCron(kst) {
-    const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const servertime = kst.tz(serverTimeZone);
-    return servertime.toDate();
-}
-
 let currentJob = null;
-
-function getServerTimeCron(kst) {
-    const serverTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const servertime = kst.tz(serverTimeZone);
-    return servertime.toDate();
-}
 
 function setSchedule(kst) {
     const dataFilePath = path.join(__dirname, "../data/resetTime.json");
@@ -29,7 +17,7 @@ function setSchedule(kst) {
         currentJob = null;
     }
     
-    const scheduledTime = getServerTimeCron(kst);
+    const scheduledTime = kst.toDate();
     
     // 스케줄 등록
     currentJob = schedule.scheduleJob(scheduledTime, () => {
@@ -63,7 +51,7 @@ function initSchedule() {
     const now = dayjs().tz();
     
     if (scheduledTime.isAfter(now)) {
-        currentJob = schedule.scheduleJob(getServerTimeCron(scheduledTime), () => {
+        currentJob = schedule.scheduleJob(scheduledTime.toDate(), () => {
             resetDB();
             fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
             currentJob = null;
