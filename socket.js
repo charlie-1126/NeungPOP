@@ -12,8 +12,8 @@ module.exports = function (server) {
     const wss = new WebSocket.Server({ server }); // Express 서버와 웹소켓 서버 연결
 
     //클라이언트와 웹소켓 연결완료
-    wss.on('connection', async (ws) => {
-        console.log('A client connected');
+    wss.on('connection', async (ws, req) => {
+        console.log('A client connected', req.headers['x-real-ip']);
 
         try {
             const initialData = await fetchData(); // 데이터베이스에서 데이터 가져오기
@@ -102,7 +102,7 @@ module.exports = function (server) {
         });
 
         ws.on('close', () => {
-            console.log('A client disconnected');
+            console.log('A client disconnected', req.headers['x-real-ip']);
         });
     });
 };
