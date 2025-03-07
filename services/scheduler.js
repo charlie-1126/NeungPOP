@@ -7,63 +7,76 @@ dayjs.extend(require('dayjs/plugin/utc'));
 dayjs.extend(require('dayjs/plugin/timezone'));
 dayjs.tz.setDefault('Asia/Seoul');
 
-let currentJob = null;
+const dataFilePath = path.join(__dirname, "../data/resetTime.json");
 
-function setSchedule(kst) {
-    const dataFilePath = path.join(__dirname, "../data/resetTime.json");
-    
-    if (currentJob) {
-        currentJob.cancel();
-        currentJob = null;
+let jobs = {};
+
+function saveSchedules() {
+    const dataToSave = {};
+    for (const id in jobs) {
+        dataToSave[id] = jobs[id].time;
     }
-    
-    const scheduledTime = kst.toDate();
-    
-    // 스케줄 등록
-    currentJob = schedule.scheduleJob(scheduledTime, () => {
-        resetDB();
-        fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
-        currentJob = null;
-    });
-    
-    const dataToSave = {
-        time: scheduledTime
-    };
     fs.writeFileSync(dataFilePath, JSON.stringify(dataToSave, null, 2));
 }
 
-function initSchedule() {
-    const dataFilePath = path.join(__dirname, "../data/resetTime.json");
-    let data = {};
-    try {
-        const fileContent = fs.readFileSync(dataFilePath, "utf-8");
-        if (fileContent.trim()) {
-            data = JSON.parse(fileContent);
+function checkTime(time){
+    for (const otherId in jobs) {
+        if (new Date(jobs[otherId].time).getTime()/1000 === time.unix()) {
+            return false;
         }
-    } catch (error) {
-        console.error(error);
-        return;
     }
-    
-    if (!data.time) return;
-    
-    const scheduledTime = dayjs(data.time);
-    const now = dayjs().tz();
-    
-    if (scheduledTime.isAfter(now)) {
-        currentJob = schedule.scheduleJob(scheduledTime.toDate(), () => {
-            resetDB();
-            fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
-            currentJob = null;
-        });
+    return true;
+}
+
+/**
+ * @param {string|number} [id]
+ * @param {dayjs.Dayjs} kst
+ */
+function setSchedule(id, kst) {
+    if (!id) {
+        id = dayjs().unix().toString();
     } else {
-        fs.writeFileSync(dataFilePath, JSON.stringify({}, null, 2));
-        console.log("만료된 스케줄 삭제");
+        id = id.toString();
     }
+    const scheduledTime = kst.toDate();
+
+    if (jobs[id]) {
+        jobs[id].job.cancel();
+    }
+
+    // 스케줄 등록
+    const job = schedule.scheduleJob(scheduledTime, () => {
+        resetDB();
+        delete jobs[id];
+        saveSchedules();
+    });
+
+    jobs[id] = { job, time: scheduledTime };
+
+    saveSchedules();
+    return id;
 }
 
-function getSchedule(){
-    const dataFilePath = path.join(__dirname, "../data/resetTime.json");
+/**
+ * @param {string|number} id
+ */
+function cancelSchedule(id) {
+    id = id.toString();
+    if (jobs[id]) {
+        jobs[id].job.cancel();
+        delete jobs[id];
+        saveSchedules();
+        return true;
+    }
+    return false;
+}
+
+function checkId(id){
+    if (jobs[id]) return true;
+    return false;
+}
+
+function initSchedule() {
     let data = {};
     try {
         const fileContent = fs.readFileSync(dataFilePath, "utf-8");
@@ -71,15 +84,38 @@ function getSchedule(){
             data = JSON.parse(fileContent);
         }
     } catch (error) {
-        console.error(error);
+        console.error("스케줄 파일 읽기 에러:", error);
         return;
     }
-
-    if (!data.time){
-        return null
+    
+    // 파일에 저장된 모든 예약에 대해 스케줄 재설정
+    for (const id in data) {
+        const scheduledTime = dayjs(data[id]);
+        const now = dayjs().tz();
+        if (scheduledTime.isAfter(now)) {
+            const job = schedule.scheduleJob(scheduledTime.toDate(), () => {
+                resetDB();
+                delete jobs[id];
+                saveSchedules();
+            });
+            jobs[id] = { job, time: scheduledTime.toDate() };
+        } else {
+            console.log(`만료된 스케줄(id: ${id}) 삭제`);
+        }
     }
-
-    return dayjs(data.time).format("YYYY/MM/DD HH:mm:ss")
+    saveSchedules();
 }
 
-module.exports = { setSchedule, initSchedule, getSchedule };
+/**
+ * @returns {object}
+ */
+function getSchedule() {
+    const schedules = [];
+    for (const id in jobs) {
+        schedules.push({time: new Date(jobs[id].time).getTime(), text: `${dayjs(jobs[id].time).format("YYYY/MM/DD HH:mm:ss")}: ${id}`});
+    }
+    schedules.sort((a,b)=> a.time - b.time);
+    return schedules.map(i=>i.text);
+}
+
+module.exports = { setSchedule, initSchedule, getSchedule, cancelSchedule, checkTime ,checkId };

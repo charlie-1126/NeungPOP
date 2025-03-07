@@ -27,8 +27,12 @@ const socket = new WebSocket('wss://' + window.location.hostname);
 //const socket = new WebSocket('ws://localhost:8080');
 socket.binaryType = 'nodebuffer';  // 기본적으로 Buffer로 설정
 
-function resetDB(pw, date = null){
-    socket.send(JSON.stringify({type:"reset", data: {pw, date}}));
+function resetDB({ pw, date = null, id = null }) {
+    socket.send(JSON.stringify({ type: "reset", data: { pw, date, id } }));
+}
+
+function cancelSchedule({pw, id}){
+    socket.send(JSON.stringify({ type: "cancelSchedule", data: { pw, id } }))
 }
 
 function getResetSchedule(){

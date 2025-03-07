@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const env = require('dotenv');
 const { fetchData, updateData, resetDB } = require('./services/dbHandler');
-const { setSchedule, getSchedule } = require('./services/scheduler');
+const { setSchedule, getSchedule, checkTime, cancelSchedule, checkId } = require('./services/scheduler');
 const dayjs = require('dayjs');
 dayjs.extend(require('dayjs/plugin/utc'));
 dayjs.extend(require('dayjs/plugin/timezone'));
@@ -48,8 +48,13 @@ module.exports = function (server) {
                                 const now = dayjs().tz();
                                 if (dayjs(date).isValid()){ // 날짜 검증
                                     if (dayjs(date).isAfter(now)){
-                                        setSchedule(dayjs.tz(date));
-                                        ws.send(JSON.stringify({type: "message", status: "success", data: `${dayjs.tz(date).format("YYYY/MM/DD HH:mm:ss")}에 초기화 등록됨`}));
+                                        if (checkTime(dayjs.tz(date))){
+                                            setSchedule(clientData.data.id,dayjs.tz(date));
+                                            ws.send(JSON.stringify({type: "message", status: "success", data: `${dayjs.tz(date).format("YYYY/MM/DD HH:mm:ss")}에 초기화 등록됨`}));
+                                        }
+                                        else{
+                                            ws.send(JSON.stringify({type: "message", status: "faild", data: "이미 등록된 시간입니다."}));
+                                        }
                                     }
                                     else{
                                         ws.send(JSON.stringify({type: "message", status: "faild", data: "현재시간 이후의 시간만 입력해주세요."}));
@@ -64,8 +69,25 @@ module.exports = function (server) {
                             ws.send(JSON.stringify({type: "message", status: "faild", data: "올바르지 않은 비밀번호입니다."}));
                         }
                     }
+                    //예약 정보 확인
                     else if(clientData.type == "getResetSchedule"){
-                        ws.send(JSON.stringify({type: "message", status: "success", data: `${getSchedule()? `${getSchedule()}에 초기화 예정` : "초기화 예정 없음."}`}));
+                        const schedules = await getSchedule();
+                        ws.send(JSON.stringify({type: "message", status: "success", data: schedules}));
+                    }
+                    //예약 취소
+                    else if(clientData.type == "cancelSchedule"){
+                        if (clientData.data.pw == process.env.PW){
+                            if (checkId(clientData.data.id)){
+                                cancelSchedule(clientData.data.id);
+                                ws.send(JSON.stringify({type: "message", status: "success", data: `예약(${clientData.data.id})취소됨.`}));
+                            }
+                            else{
+                                ws.send(JSON.stringify({type: "message", status: "faild", data: "존재하지 않는 id"}));
+                            }
+                        }
+                        else{
+                            ws.send(JSON.stringify({type: "message", status: "faild", data: "올바르지 않은 비밀번호입니다."}));
+                        }
                     }
                     else{
                         ws.send(JSON.stringify({type: "message", status: "faild", data: "올바르지 않은 type값"}));
